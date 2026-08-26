@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>招聘监控（手机版）</title>
+<style>
+:root {
+  --bg: #f0f2f5; --card: #fff; --text: #333; --muted: #888;
+  --border: #e8e8e8; --accent: #3498db; --red: #e74c3c; --green: #27ae60;
+  --orange: #f39c12;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; padding: 16px; position: sticky; top: 0; z-index: 100; }
+header h1 { font-size: 18px; }
+header .sub { font-size: 12px; color: #a0aec0; margin-top: 2px; }
+/* Nav tabs */
+.nav { display: flex; overflow-x: auto; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 52px; z-index: 99; -webkit-overflow-scrolling: touch; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn { flex-shrink: 0; padding: 12px 16px; border: none; background: none; font-size: 14px; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+/* Section */
+.section { display: none; padding: 12px; }
+.section.active { display: block; }
+/* Stats summary */
+.summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.summary-card { background: var(--card); border-radius: 8px; padding: 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.summary-card .num { font-size: 20px; font-weight: 700; }
+.summary-card .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+/* BM card */
+.bm-item { background: var(--card); border-radius: 8px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); border-left: 3px solid var(--accent); }
+.bm-item.urgent { border-left-color: var(--red); }
+.bm-item .bm-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.bm-item .bm-meta { font-size: 12px; color: var(--muted); }
+.cd { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 4px; }
+.cd.urgent { background: #fadbd8; color: #c0392b; }
+.cd.warn { background: #fef9e7; color: #b7950b; }
+.cd.ok { background: #d5f5e3; color: #1e8449; }
+/* ZJ filters */
+.filter-row { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+.filter-row::-webkit-scrollbar { display: none; }
+.fbtn { flex-shrink: 0; padding: 5px 10px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); font-size: 12px; white-space: nowrap; color: var(--text); }
+.fbtn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.fbtn.city { padding: 3px 8px; font-size: 11px; border-radius: 10px; }
+.fbtn.city.active { background: var(--green); border-color: var(--green); }
+.search-box { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; margin-bottom: 10px; outline: none; }
+.search-box:focus { border-color: var(--accent); }
+/* ZJ item */
+.zj-item { background: var(--card); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+.zj-item .zj-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.zj-item .zj-title a { color: var(--text); text-decoration: none; }
+.zj-item .zj-meta { font-size: 11px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 600; }
+.badge-biannei { background: #d4efdf; color: #1e8449; }
+.badge-bianwai { background: #fadbd8; color: #c0392b; }
+.badge-xuandiao { background: #d6eaf8; color: #2471a3; }
+.badge-unknown { background: #eaecee; color: #7f8c8d; }
+.badge-hot { background: #fdedec; color: #e74c3c; }
+/* Load more */
+.load-more { text-align: center; padding: 12px; }
+.load-more button { padding: 8px 24px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); font-size: 13px; color: var(--accent); }
+.info-line { font-size: 11px; color: var(--muted); text-align: center; padding: 8px 0; }
+.closed-section { margin-top: 12px; }
+.closed-section h4 { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.closed-item { font-size: 12px; color: var(--muted); padding: 3px 0; }
+footer { text-align: center; padding: 16px; color: var(--muted); font-size: 11px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📊 招聘监控</h1>
+  <div class="sub">手机版 · 2026-08-27 01:06</div>
+</header>
+
+<div class="nav" id="navBar"></div>
+<div id="sections"></div>
+
+<footer>招聘监控 · 手机版</footer>
+
+<script type="application/json" id="bm-data">{"active": [{"key": "广元市|广元市2026年养老服务管理专员政策性岗位公开招募|2026年08月21日 10:00|2026年08月28日 08:00", "area": "广元市", "name": "广元市2026年养老服务管理专员政策性岗位公开招募", "start": "2026年08月21日 10:00", "end": "2026年08月28日 08:00", "pay_start": "", "pay_end": "", "phase": "ongoing", "remaining": 1440, "signup_url": "checkRE/3739-6644a9b3aa15784d891d437675eb2b32-", "external_url": "https://mzj.cngy.gov.cn/new/show/91012bcb59204627bebf0bb9cc90a144.html"}, {"key": "凉山州|木里县2026年政策性岗位辅助人员招募|2026年08月24日 09:00|2026年08月27日 17:00", "area": "凉山州", "name": "木里县2026年政策性岗位辅助人员招募", "start": "2026年08月24日 09:00", "end": "2026年08月27日 17:00", "pay_start": "", "pay_end": "", "phase": "ongoing", "remaining": 900, "signup_url": "checkRE/3742-443ce8340ffe7f1f6f3d243770c3badc-", "external_url": "http://www.muli.gov.cn/gwyxx/"}, {"key": "凉山州|会东县2026年定向招聘社区专职工作者|2026年08月25日 10:00|2026年08月30日 17:30", "area": "凉山州", "name": "会东县2026年定向招聘社区专职工作者", "start": "2026年08月25日 10:00", "end": "2026年08月30日 17:30", "pay_start": "2026年08月25日 10:00", "pay_end": "2026年08月31日 23:59", "phase": "ongoing", "remaining": 4320, "signup_url": "checkRE/3738-a4b6c0e9252d0dca792c2b113e1ec085-", "external_url": "https://mp.weixin.qq.com/s?__biz=MzUxNjI3MzM2OQ==&mid=2247514074&idx=1&sn=14ef615cd81bbb48e5217187055c815c&chksm=f8e6782b8ac2e601e99f8ecfa464fd2a4d7533587780528d6fae8e33f1694ce0f7631c9e7020&scene=27"}, {"key": "内江市|2026年资中县面向社会公开选聘社区工作者|2026年08月24日 09:00|2026年08月28日 18:00", "area": "内江市", "name": "2026年资中县面向社会公开选聘社区工作者", "start": "2026年08月24日 09:00", "end": "2026年08月28日 18:00", "pay_start": "", "pay_end": "", "phase": "ongoing", "remaining": 1440, "signup_url": "checkRE/3733-52ead5f31d6ab666654464458a071a6f-", "external_url": "http://www.njpta.org.cn/"}], "closed": [{"name": "甘孜州2026年公开招募养老服务管理专员招募", "external_url": "https://www.gzzrsks.com.cn/newsDetail/30091.html"}]}</script>
+<script type="application/json" id="zj-data">{"sc": [], "fj": [], "cq": [], "gd": []}</script>
+<script type="application/json" id="zj-stats">{"sc": {"total": 0, "cities": {}, "bianzhi": {"编制": 0, "编外": 0, "选调": 0, "未知": 0}}, "fj": {"total": 0, "cities": {}, "bianzhi": {"编制": 0, "编外": 0, "选调": 0, "未知": 0}}, "cq": {"total": 0, "cities": {}, "bianzhi": {"编制": 0, "编外": 0, "选调": 0, "未知": 0}}, "gd": {"total": 0, "cities": {}, "bianzhi": {"编制": 0, "编外": 0, "选调": 0, "未知": 0}}}</script>
+<script>
+(function() {
+  var BM = JSON.parse(document.getElementById('bm-data').textContent);
+  var ZJ_DATA = JSON.parse(document.getElementById('zj-data').textContent);
+  var ZJ_STATS = JSON.parse(document.getElementById('zj-stats').textContent);
+
+  var REGIONS = [
+    {key:'sc', label:'四川', color:'#e67e22'},
+    {key:'fj', label:'福建', color:'#1abc9c'},
+    {key:'cq', label:'重庆', color:'#9b59b6'},
+    {key:'gd', label:'广东', color:'#e74c3c'}
+  ];
+
+  var PAGE_SIZE = 20;
+  var zjState = {};
+  REGIONS.forEach(function(r) {
+    zjState[r.key] = {bz:null, city:null, search:'', page:1};
+  });
+
+  // Build nav + sections
+  var navBar = document.getElementById('navBar');
+  var sectionsEl = document.getElementById('sections');
+  var tabs = [{id:'bm', label:'🏫 考生之家'}];
+  REGIONS.forEach(function(r) { tabs.push({id:'zj-'+r.key, label:'🎓 '+r.label}); });
+
+  tabs.forEach(function(t, i) {
+    var btn = document.createElement('button');
+    btn.className = 'nav-btn' + (i===0?' active':'');
+    btn.textContent = t.label;
+    btn.onclick = function() { switchTab(t.id); };
+    navBar.appendChild(btn);
+
+    var sec = document.createElement('div');
+    sec.className = 'section' + (i===0?' active':'');
+    sec.id = 'sec-' + t.id;
+    sectionsEl.appendChild(sec);
+  });
+
+  renderBm();
+  REGIONS.forEach(function(r) { renderZj(r.key); });
+
+  function switchTab(id) {
+    document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+    var idx = tabs.findIndex(function(t){return t.id===id;});
+    navBar.children[idx].classList.add('active');
+    document.getElementById('sec-'+id).classList.add('active');
+  }
+
+  // BM
+  function renderBm() {
+    var el = document.getElementById('sec-bm');
+    var active = BM.active || [];
+    var closed = BM.closed || [];
+    var h = '<div class="summary">';
+    h += '<div class="summary-card"><div class="num" style="color:var(--accent)">'+active.length+'</div><div class="lbl">进行中</div></div>';
+    h += '<div class="summary-card"><div class="num" style="color:var(--red)">'+closed.length+'</div><div class="lbl">已结束</div></div>';
+    h += '<div class="summary-card"><div class="num" style="color:var(--green)">'+(active.length+closed.length)+'</div><div class="lbl">总计</div></div>';
+    h += '</div>';
+    if (active.length === 0) {
+      h += '<div class="info-line">暂无进行中的报名项目</div>';
+    }
+    active.forEach(function(e) {
+      var isUrgent = e.phase==='ongoing' && e.remaining!==null && e.remaining<=120;
+      var cd = '';
+      if (e.remaining !== null) {
+        var cls, txt;
+        if (e.remaining<60) { txt=e.remaining+'分钟'; cls='urgent'; }
+        else if (e.remaining<1440) { txt=Math.floor(e.remaining/60)+'小时'; cls='warn'; }
+        else { txt=Math.floor(e.remaining/1440)+'天'; cls='ok'; }
+        cd = '<span class="cd '+cls+'">⏳'+txt+'</span>';
+      }
+      h += '<div class="bm-item'+(isUrgent?' urgent':'')+'">';
+      h += '<div class="bm-title">【'+(e.area||'')+'】'+e.name+cd+'</div>';
+      h += '<div class="bm-meta">📅 '+(e.start||'?')+' ~ '+(e.end||'?');
+      if (e.pay_start) h += ' | 💰 '+e.pay_start+' ~ '+e.pay_end;
+      h += ' | '+(e.phase==='upcoming'?'⏳即将开始':'🔴报名中');
+      h += '</div></div>';
+    });
+    if (closed.length > 0) {
+      h += '<div class="closed-section"><h4>📁 近期已结束 ('+closed.length+')</h4>';
+      closed.forEach(function(c) { h += '<div class="closed-item">· '+c.name+'</div>'; });
+      h += '</div>';
+    }
+    el.innerHTML = h;
+  }
+
+  // ZJ
+  function renderZj(key) {
+    var region = REGIONS.find(function(r){return r.key===key;});
+    var el = document.getElementById('sec-zj-'+key);
+    var stats = ZJ_STATS[key];
+    var data = ZJ_DATA[key] || [];
+    var st = zjState[key];
+    var color = region.color;
+
+    // Summary
+    var h = '<div class="summary">';
+    h += '<div class="summary-card"><div class="num" style="color:'+color+'">'+stats.total+'</div><div class="lbl">招聘总数</div></div>';
+    h += '<div class="summary-card"><div class="num" style="color:#27ae60">'+stats.bianzhi['编制']+'</div><div class="lbl">编制</div></div>';
+    h += '<div class="summary-card"><div class="num" style="color:#e74c3c">'+(stats.bianzhi['编外']+stats.bianzhi['选调'])+'</div><div class="lbl">编外/选调</div></div>';
+    h += '</div>';
+
+    // Search
+    h += '<input class="search-box" type="text" placeholder="🔍 搜索标题..." oninput="window._mZjSearch(\''+key+'\',this.value)">';
+
+    // BZ filter
+    h += '<div class="filter-row">';
+    ['全部','编制','编外','选调'].forEach(function(t) {
+      var act = (t==='全部' && !st.bz) || st.bz===t;
+      h += '<button class="fbtn'+(act?' active':'')+'" onclick="window._mZjBz(\''+key+'\',\''+t+'\')">'+t+'</button>';
+    });
+    h += '</div>';
+
+    // City filter
+    var cities = Object.keys(stats.cities);
+    h += '<div class="filter-row">';
+    h += '<button class="fbtn city'+(!st.city?' active':'')+'" onclick="window._mZjCity(\''+key+'\',null)">全部</button>';
+    cities.forEach(function(c) {
+      h += '<button class="fbtn city'+(st.city===c?' active':'')+'" onclick="window._mZjCity(\''+key+'\',\''+c+'\')">'+c+'('+stats.cities[c]+')</button>';
+    });
+    h += '</div>';
+
+    // Filter data
+    var filtered = data;
+    if (st.bz) filtered = filtered.filter(function(e){return e.bianzhi===st.bz;});
+    if (st.city) filtered = filtered.filter(function(e){return e.city===st.city;});
+    if (st.search) {
+      var q = st.search.toLowerCase();
+      filtered = filtered.filter(function(e){return (e.title||'').toLowerCase().indexOf(q)>=0 || (e.city||'').toLowerCase().indexOf(q)>=0;});
+    }
+
+    var show = filtered.slice(0, st.page * PAGE_SIZE);
+    var badgeCls = {'编制':'badge-biannei','编外':'badge-bianwai','选调':'badge-xuandiao','未知':'badge-unknown'};
+
+    h += '<div class="info-line">共 '+filtered.length+' 条</div>';
+    show.forEach(function(e) {
+      var bz = e.bianzhi||'未知';
+      var isHot = e.date==='热门推荐';
+      h += '<div class="zj-item">';
+      h += '<div class="zj-title"><a href="'+(e.url||'#')+'" target="_blank">'+e.title+'</a></div>';
+      h += '<div class="zj-meta">';
+      h += '<span class="badge '+(badgeCls[bz]||'badge-unknown')+'">'+bz+'</span>';
+      h += '<span>'+(e.city||'?')+'</span>';
+      if (e.count) h += '<span>'+e.count+'人</span>';
+      h += '<span>'+(isHot?'<span class="badge badge-hot">热门</span>':e.date)+'</span>';
+      h += '</div></div>';
+    });
+
+    if (show.length < filtered.length) {
+      h += '<div class="load-more"><button onclick="window._mZjMore(\''+key+'\')">加载更多（还有 '+(filtered.length-show.length)+' 条）</button></div>';
+    }
+
+    el.innerHTML = h;
+  }
+
+  window._mZjSearch = function(key, val) { zjState[key].search=val; zjState[key].page=1; renderZj(key); };
+  window._mZjBz = function(key, val) { zjState[key].bz = val==='全部'?null:val; zjState[key].page=1; renderZj(key); };
+  window._mZjCity = function(key, val) { zjState[key].city=val; zjState[key].page=1; renderZj(key); };
+  window._mZjMore = function(key) { zjState[key].page++; renderZj(key); };
+})();
+</script>
+</body>
+</html>
