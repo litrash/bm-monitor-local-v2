@@ -51,6 +51,7 @@ header .sub { font-size: 12px; color: #a0aec0; margin-top: 2px; }
 .zj-item .zj-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .zj-item .zj-title a { color: var(--text); text-decoration: none; }
 .zj-item .zj-meta { font-size: 11px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
+.date-recent { color: var(--red) !important; font-weight: 600; }
 .badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 600; }
 .badge-biannei { background: #d4efdf; color: #1e8449; }
 .badge-bianwai { background: #fadbd8; color: #c0392b; }
@@ -71,7 +72,7 @@ footer { text-align: center; padding: 16px; color: var(--muted); font-size: 11px
 
 <header>
   <h1>📊 招聘监控</h1>
-  <div class="sub">手机版 · 2026-08-27 01:10</div>
+  <div class="sub">手机版 · 2026-08-27 01:19</div>
 </header>
 
 <div class="nav" id="navBar"></div>
@@ -218,16 +219,29 @@ footer { text-align: center; padding: 16px; color: var(--muted); font-size: 11px
     var badgeCls = {'编制':'badge-biannei','编外':'badge-bianwai','选调':'badge-xuandiao','未知':'badge-unknown'};
 
     h += '<div class="info-line">共 '+filtered.length+' 条</div>';
+
+    // 判断近两日
+    var today = new Date(); today.setHours(0,0,0,0);
+    var twoDaysAgo = new Date(today); twoDaysAgo.setDate(twoDaysAgo.getDate()-2);
+    function isRecent(d) {
+      if (!d || d==='热门推荐') return false;
+      var parts = d.split('-');
+      if (parts.length<3) return false;
+      var dt = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+      return dt >= twoDaysAgo && dt <= today;
+    }
+
     show.forEach(function(e) {
       var bz = e.bianzhi||'未知';
       var isHot = e.date==='热门推荐';
+      var recent = isRecent(e.date);
       h += '<div class="zj-item">';
       h += '<div class="zj-title"><a href="'+(e.url||'#')+'" target="_blank">'+e.title+'</a></div>';
       h += '<div class="zj-meta">';
       h += '<span class="badge '+(badgeCls[bz]||'badge-unknown')+'">'+bz+'</span>';
       h += '<span>'+(e.city||'?')+'</span>';
       if (e.count) h += '<span>'+e.count+'人</span>';
-      h += '<span>'+(isHot?'<span class="badge badge-hot">热门</span>':e.date)+'</span>';
+      h += '<span class="'+(recent?'date-recent':'')+'">' +(isHot?'<span class="badge badge-hot">热门</span>':e.date)+'</span>';
       h += '</div></div>';
     });
 
