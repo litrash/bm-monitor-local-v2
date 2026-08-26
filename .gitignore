@@ -1,0 +1,16 @@
+*.log
+*.pyc
+__pycache__/
+.venv/
+.vscode/
+bm_monitor_state.json
+zj_sc_monitor_state.json
+zj_fj_monitor_state.json
+zj_cq_monitor_state.json
+zj_gd_monitor_state.json
+bm_report.txt
+zj_sc_report.txt
+zj_fj_report.txt
+zj_cq_report.txt
+zj_gd_report.txt
+daily_report.txt
