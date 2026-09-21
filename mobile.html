@@ -110,7 +110,7 @@ footer { text-align: center; padding: 16px; color: var(--muted); font-size: 11px
 
 <header>
   <h1>📊 招聘监控</h1>
-  <div class="sub">手机版 · 2026-09-21 22:27</div>
+  <div class="sub">手机版 · 2026-09-21 22:34</div>
 </header>
 
 <div class="nav" id="navBar"></div>
@@ -137,7 +137,7 @@ window.__FAV_INIT = (function() {
   var REGIONS = JSON.parse(document.getElementById('regions-config').textContent);
 
   var PAGE_SIZE = 20;
-  var FAV_BAR = '<button class="fav-mode" data-fav="off">⭐ 收藏</button><button class="fav-tool" data-fav-export>导出</button><button class="fav-tool" data-fav-import>导入</button><button class="fav-tool" data-fav-clear>清空</button>';
+  var FAV_BAR = '<button type="button" class="fav-mode" data-fav-mode>⭐ 收藏</button><button class="fav-tool" data-fav-export>导出</button><button class="fav-tool" data-fav-import>导入</button><button class="fav-tool" data-fav-clear>清空</button>';
   var favFilter = false;
   var zjState = {};
   REGIONS.forEach(function(r) {
@@ -414,10 +414,11 @@ window.__FAV_INIT = (function() {
     if (t.closest('[data-fav-export]')) { window.FavStore.export(); return; }
     if (t.closest('[data-fav-import]')) { window.FavStore.import(); return; }
     if (t.closest('[data-fav-clear]')) { window.FavStore.clearAll(); return; }
-    var mode = t.closest('[data-fav]');
+    var mode = t.closest('[data-fav-mode]');
     if (mode) {
+      // 切换：没有 active 就进入收藏模式，已有 active 就回到全部
       var on = !mode.classList.contains('active');
-      document.querySelectorAll('[data-fav]').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('[data-fav-mode]').forEach(function(b) { b.classList.remove('active'); });
       if (on) mode.classList.add('active');
       document.dispatchEvent(new CustomEvent('favmode', {detail: {on: on}}));
     }
