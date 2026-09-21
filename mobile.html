@@ -110,7 +110,7 @@ footer { text-align: center; padding: 16px; color: var(--muted); font-size: 11px
 
 <header>
   <h1>📊 招聘监控</h1>
-  <div class="sub">手机版 · 2026-09-21 22:36</div>
+  <div class="sub">手机版 · 2026-09-21 22:45</div>
 </header>
 
 <div class="nav" id="navBar"></div>
@@ -137,8 +137,13 @@ window.__FAV_INIT = (function() {
   var REGIONS = JSON.parse(document.getElementById('regions-config').textContent);
 
   var PAGE_SIZE = 20;
-  var FAV_BAR = '<button type="button" class="fav-mode" data-fav-mode>⭐ 收藏</button><button class="fav-tool" data-fav-export>导出</button><button class="fav-tool" data-fav-import>导入</button><button class="fav-tool" data-fav-clear>清空</button>';
+  var FAV_BAR = '<button type="button" class="fav-mode" data-fav-mode>⭐ 收藏</button><button type="button" class="fav-tool fav-all" data-fav-all>回到全部</button><button class="fav-tool" data-fav-export>导出</button><button class="fav-tool" data-fav-import>导入</button><button class="fav-tool" data-fav-clear>清空</button>';
   var favFilter = false;
+
+  // 收藏按钮的 active 由 window.__FAV_MODE 决定，而不是写在静态 HTML 里
+  function favBarHtml() {
+    return FAV_BAR.replace('class="fav-mode"', 'class="fav-mode' + (window.__FAV_MODE ? ' active' : '') + '"');
+  }
   var zjState = {};
   REGIONS.forEach(function(r) {
     zjState[r.key] = {bz:null, city:null, search:'', page:1};
@@ -231,8 +236,8 @@ window.__FAV_INIT = (function() {
     // Search
     h += '<input class="search-box" type="text" placeholder="🔍 搜索标题..." oninput="window._mZjSearch(\''+key+'\',this.value)">';
 
-    // 收藏筛选 / 导入导出
-    h += '<div class="filter-row"><div class="fav-bar">' + FAV_BAR + '</div></div>';
+    // 收藏筛选 / 导入导出（active 状态按全局标志渲染，整段 innerHTML 重建也不会丢）
+    h += '<div class="filter-row"><div class="fav-bar">' + favBarHtml() + '</div></div>';
 
     // BZ filter
     h += '<div class="filter-row">';
@@ -322,6 +327,15 @@ window.__FAV_INIT = (function() {
   });
   document.addEventListener('favchange', function() {
     REGIONS.forEach(function(r) { renderZj(r.key); });
+  });
+
+  // 工具栏状态同步：不管哪段脚本什么时候派发 favchange，
+  // 都让收藏按钮的 active 与全局标志保持一致
+  document.addEventListener('favchange', function() {
+    if (window.FavRefreshStars) window.FavRefreshStars();
+  });
+  document.addEventListener('favmode', function() {
+    if (window.FavRefreshStars) window.FavRefreshStars();
   });
 })();
 </script>
@@ -414,12 +428,20 @@ window.__FAV_INIT = (function() {
     if (t.closest('[data-fav-export]')) { window.FavStore.export(); return; }
     if (t.closest('[data-fav-import]')) { window.FavStore.import(); return; }
     if (t.closest('[data-fav-clear]')) { window.FavStore.clearAll(); return; }
+
+    // 回到全部：显式退出收藏模式，不依赖当前按钮的 active 状态
+    if (t.closest('[data-fav-all]')) {
+      document.querySelectorAll('[data-fav-mode]').forEach(function(b) { b.classList.remove('active'); });
+      document.dispatchEvent(new CustomEvent('favmode', {detail: {on: false}}));
+      return;
+    }
+
     var mode = t.closest('[data-fav-mode]');
     if (mode) {
-      // 切换：没有 active 就进入收藏模式，已有 active 就回到全部
-      var on = !mode.classList.contains('active');
-      document.querySelectorAll('[data-fav-mode]').forEach(function(b) { b.classList.remove('active'); });
-      if (on) mode.classList.add('active');
+      // 正在收藏模式 -> 退出；否则进入。用全局标志判断，不依赖按钮 class
+      var on = !window.__FAV_MODE;
+      window.__FAV_MODE = on;
+      document.querySelectorAll('[data-fav-mode]').forEach(function(b) { b.classList.toggle('active', on); });
       document.dispatchEvent(new CustomEvent('favmode', {detail: {on: on}}));
     }
   });
@@ -430,6 +452,10 @@ window.__FAV_INIT = (function() {
       var on = !!favSet[s.getAttribute('data-fav-url')];
       s.classList.toggle('on', on);
       s.textContent = on ? '★' : '☆';
+    });
+    // 收藏按钮的 active 状态由全局标志决定，避免重渲染后状态丢失
+    document.querySelectorAll('[data-fav-mode]').forEach(function(b) {
+      b.classList.toggle('active', !!window.__FAV_MODE);
     });
   };
   window.FavRefreshStars();
